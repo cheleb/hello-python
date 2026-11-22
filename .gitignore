@@ -8,3 +8,5 @@
 !.devcontainer/devbox.tools.json
 .sandcat/settings.local.json
 # /Sandcat
+__pycache__/
+*.pyc
