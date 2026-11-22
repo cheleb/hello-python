@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from oop.shapes import Circle, Rectangle, Shape, Square
+from oop.shapes import Circle, Rectangle, Shape, Square, total_area
 
 
 class UnitSquare(Shape):
@@ -132,6 +132,52 @@ class CircleTest(unittest.TestCase):
 
     def test_str(self) -> None:
         self.assertEqual(str(Circle(1)), "Circle (area=3.14, perimeter=6.28)")
+
+
+class ComparisonTest(unittest.TestCase):
+    def test_equal_by_area_across_types(self) -> None:
+        self.assertEqual(Square(2), Rectangle(1, 4))
+        self.assertNotEqual(Square(2), Square(3))
+
+    def test_equality_with_non_shape(self) -> None:
+        self.assertNotEqual(Square(2), 4.0)
+
+    def test_ordering(self) -> None:
+        self.assertLess(Square(1), Circle(1))
+        self.assertGreater(Rectangle(2, 3), Square(2))
+        self.assertLessEqual(Square(2), Rectangle(1, 4))
+        self.assertGreaterEqual(Circle(2), Circle(2))
+
+    def test_ordering_with_non_shape_raises(self) -> None:
+        with self.assertRaises(TypeError):
+            Square(1) < 5  # noqa: B015
+
+    def test_sorting_mixed_shapes(self) -> None:
+        big, mid, small = Rectangle(3, 4), Circle(1.5), Square(1)
+        self.assertEqual(sorted([big, small, mid]), [small, mid, big])
+        self.assertIs(max([small, big, mid]), big)
+
+    def test_float_noise_is_equal_not_ordered(self) -> None:
+        a = Square(1)
+        b = Rectangle(1, 1 + 1e-12)
+        self.assertEqual(a, b)
+        self.assertFalse(a < b)
+        self.assertFalse(b < a)
+        self.assertLessEqual(a, b)
+        self.assertGreaterEqual(a, b)
+
+    def test_shapes_are_unhashable(self) -> None:
+        with self.assertRaises(TypeError):
+            hash(Square(1))
+
+
+class TotalAreaTest(unittest.TestCase):
+    def test_mixed_list(self) -> None:
+        shapes = [Rectangle(2, 3), Square(2), Circle(1)]
+        self.assertAlmostEqual(total_area(shapes), 10 + math.pi)
+
+    def test_empty(self) -> None:
+        self.assertEqual(total_area([]), 0)
 
 
 if __name__ == "__main__":

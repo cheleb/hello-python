@@ -2,10 +2,17 @@
 
 import math
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from functools import total_ordering
 
 
+@total_ordering
 class Shape(ABC):
-    """Abstract base class: subclasses must implement area and perimeter."""
+    """Abstract base class: subclasses must implement area and perimeter.
+
+    Shapes compare by area, so a Square(2) equals a Rectangle(1, 4).
+    ``total_ordering`` derives <=, > and >= from __eq__ and __lt__.
+    """
 
     @property
     def name(self) -> str:
@@ -19,6 +26,19 @@ class Shape(ABC):
     @abstractmethod
     def perimeter(self) -> float:
         """Return the perimeter of the shape."""
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Shape):
+            return NotImplemented
+        return math.isclose(self.area(), other.area())
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, Shape):
+            return NotImplemented
+        return self.area() < other.area() and not self == other
+
+    # Equality is tolerance-based, so no consistent hash exists: unhashable.
+    __hash__ = None  # type: ignore[assignment]
 
     def __repr__(self) -> str:
         return f"{self.name}()"
@@ -133,3 +153,8 @@ class Circle(Shape):
 
     def __repr__(self) -> str:
         return f"{self.name}(radius={self.radius})"
+
+
+def total_area(shapes: Iterable[Shape]) -> float:
+    """Sum the areas of any mix of shapes (polymorphism: no type checks)."""
+    return sum(shape.area() for shape in shapes)
